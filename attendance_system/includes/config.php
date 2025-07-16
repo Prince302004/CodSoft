@@ -135,9 +135,86 @@ function sendOTP($email, $otp, $student_name = 'Student') {
     return true;
 }
 
+// Function to send password reset email
+function sendPasswordResetEmail($email, $reset_link, $user_name = 'User', $user_type = 'student') {
+    $subject = "Password Reset Request - College Attendance System";
+    $user_type_label = ucfirst($user_type);
+    
+    $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
+            .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .header { background-color: #ffc107; color: #212529; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }
+            .content { padding: 20px; }
+            .reset-button { display: inline-block; padding: 15px 30px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; font-weight: bold; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            .warning { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>🔒 College Attendance System</h1>
+                <p>Password Reset Request</p>
+            </div>
+            <div class='content'>
+                <p>Dear $user_name,</p>
+                <p>You have requested to reset your password for the College Attendance Management System ($user_type_label Account).</p>
+                
+                <p>Click the button below to reset your password:</p>
+                
+                <div style='text-align: center;'>
+                    <a href='$reset_link' class='reset-button'>Reset Password</a>
+                </div>
+                
+                <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style='word-break: break-all; color: #007bff;'>$reset_link</p>
+                
+                <div class='warning'>
+                    <strong>⚠️ Security Notice:</strong>
+                    <ul>
+                        <li>This link is valid for 1 hour only</li>
+                        <li>If you didn't request this reset, please ignore this email</li>
+                        <li>For security reasons, please don't share this link with anyone</li>
+                    </ul>
+                </div>
+                
+                <p>If you're having trouble resetting your password, please contact your system administrator.</p>
+                
+                <p>Best regards,<br>College Attendance System</p>
+            </div>
+            <div class='footer'>
+                <p>This is an automated email. Please do not reply to this message.</p>
+                <p>© " . date('Y') . " College Attendance Management System</p>
+            </div>
+        </div>
+    </body>
+    </html>";
+    
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $headers .= "From: " . FROM_NAME . " <" . FROM_EMAIL . ">" . "\r\n";
+    $headers .= "Reply-To: " . FROM_EMAIL . "\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion();
+    
+    // For production, use a proper email library like PHPMailer or SwiftMailer
+    $result = mail($email, $subject, $message, $headers);
+    
+    if (!$result) {
+        error_log("Failed to send password reset email to: $email");
+        return false;
+    }
+    
+    // Log for debugging (remove in production)
+    error_log("Password reset email sent to: $email");
+    return true;
+}
+
 // Check if user is logged in
 function isLoggedIn() {
-    return isset($_SESSION['student_id']) || isset($_SESSION['admin_id']);
+    return isset($_SESSION['student_id']) || isset($_SESSION['admin_id']) || isset($_SESSION['teacher_id']);
 }
 
 // Check if admin is logged in
@@ -148,6 +225,33 @@ function isAdmin() {
 // Check if student is logged in
 function isStudent() {
     return isset($_SESSION['student_id']);
+}
+
+// Check if teacher is logged in
+function isTeacher() {
+    return isset($_SESSION['teacher_id']);
+}
+
+// Logout function
+function logout() {
+    session_destroy();
+    redirect('index.php');
+}
+
+// Get user type
+function getUserType() {
+    if (isAdmin()) return 'admin';
+    if (isStudent()) return 'student';
+    if (isTeacher()) return 'teacher';
+    return null;
+}
+
+// Get user ID
+function getUserId() {
+    if (isAdmin()) return $_SESSION['admin_id'];
+    if (isStudent()) return $_SESSION['student_id'];
+    if (isTeacher()) return $_SESSION['teacher_id'];
+    return null;
 }
 
 // Redirect function
