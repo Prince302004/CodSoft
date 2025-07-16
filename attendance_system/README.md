@@ -42,16 +42,36 @@ A modern, web-based attendance management system for colleges and universities w
 ### Prerequisites
 - PHP 7.4 or higher
 - MySQL 8.0 or higher
-- Web server (Apache/Nginx)
+- Web server (Apache/Nginx) or XAMPP
 - Modern web browser with geolocation support
 
-### Step 1: Clone/Download
+### Option 1: XAMPP Setup (Recommended for Development)
+
+#### Quick Start
+1. **Download and install XAMPP** from [https://www.apachefriends.org/](https://www.apachefriends.org/)
+2. **Place project files** in htdocs folder:
+   - Windows: `C:\xampp\htdocs\attendance_system`
+   - Mac: `/Applications/XAMPP/htdocs/attendance_system`
+   - Linux: `/opt/lampp/htdocs/attendance_system`
+
+3. **Run quick setup**:
+   - Windows: Double-click `start_xampp.bat`
+   - Mac/Linux: Run `./start_xampp.sh`
+   - Or manually visit: `http://localhost/attendance_system/xampp_quick_setup.php`
+
+4. **Follow setup wizard** to complete installation
+
+📋 **For detailed XAMPP instructions, see [`XAMPP_SETUP.md`](XAMPP_SETUP.md)**
+
+### Option 2: Manual Installation
+
+#### Step 1: Clone/Download
 ```bash
 git clone <repository-url>
 cd attendance_system
 ```
 
-### Step 2: Database Setup
+#### Step 2: Database Setup
 1. Create a MySQL database named `attendance_db`
 2. Import the database schema:
 ```bash
@@ -90,7 +110,9 @@ define('FROM_NAME', 'College Attendance System');
 3. Enable PHP extensions: PDO, PDO_MySQL
 
 ### Step 5: Testing
-1. Access `index.php` in your browser
+1. Access the system in your browser:
+   - XAMPP: `http://localhost/attendance_system`
+   - Manual: `http://yourdomain.com/attendance_system`
 2. Use default credentials:
    - **Admin**: username: `admin`, password: `password`
    - **Student**: ID: `STU001`, password: `password`
@@ -213,6 +235,12 @@ attendance_system/
 │   └── images/            # Image files
 ├── database.sql           # Database schema
 ├── index.php              # Main login page
+├── xampp_quick_setup.php  # XAMPP setup wizard
+├── test_email.php         # Email configuration test
+├── start_xampp.bat        # Windows XAMPP startup script
+├── start_xampp.sh         # Mac/Linux XAMPP startup script
+├── XAMPP_SETUP.md         # XAMPP installation guide
+├── EMAIL_SETUP.md         # Email configuration guide
 └── README.md              # This file
 ```
 
@@ -254,12 +282,28 @@ attendance_system/
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
+## XAMPP Troubleshooting
+
+### Common Issues
+- **Apache won't start**: Change port from 80 to 8080 in Apache config
+- **MySQL won't start**: Change port from 3306 to 3307 in MySQL config
+- **Email not working**: Check Gmail App Password configuration
+- **Database connection error**: Verify MySQL service is running
+
+### Quick Fixes
+1. **Restart XAMPP services** in Control Panel
+2. **Check firewall settings** for blocked ports
+3. **Verify file permissions** (Mac/Linux)
+4. **Check error logs** in `C:\xampp\apache\logs\`
+
 ## Support
 
 For support and questions:
+- Check `XAMPP_SETUP.md` for XAMPP-specific help
+- Check `EMAIL_SETUP.md` for email configuration help
+- Run `xampp_quick_setup.php` for system diagnostics
 - Create an issue in the repository
 - Contact the development team
-- Check the documentation
 
 ## Changelog
 
