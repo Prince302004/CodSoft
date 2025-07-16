@@ -128,13 +128,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET' && isset($_GET['action']) && $_GET['acti
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="profile.php">
+                            <i class="fas fa-user-circle"></i> Profile
+                        </a>
+                    </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
                             <i class="fas fa-user"></i> <?php echo htmlspecialchars($teacher['first_name'] . ' ' . $teacher['last_name']); ?>
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
-                                <i class="fas fa-user-circle"></i> Profile
+                                <i class="fas fa-user-circle"></i> Quick Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="profile.php">
+                                <i class="fas fa-edit"></i> Edit Profile
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php">

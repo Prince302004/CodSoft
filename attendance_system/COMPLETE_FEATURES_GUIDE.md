@@ -87,11 +87,19 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 - **Student Lists**: View enrolled students per subject
 - **Real-time Statistics**: Today's attendance percentages
 
-#### Teacher Profile
-- Complete teacher information
-- Department and qualification details
-- Subject assignments
-- Attendance tracking for assigned subjects
+#### Teacher Profile Management
+- **Self-Profile Update**: Teachers can update their own information
+- **Password Management**: Change password functionality
+- **Subject Requests**: Request assignment to new subjects
+- **Subject Removal**: Remove themselves from subject assignments
+- **Department Transfer**: Update department information
+- **Qualification Updates**: Update educational qualifications
+
+#### Subject Self-Management
+- **View Assigned Subjects**: See all currently assigned subjects
+- **Request New Subjects**: Request assignment to available subjects
+- **Remove Assignments**: Remove themselves from subjects (with restrictions)
+- **Subject Details**: View subject information and enrolled students
 
 ### 👨‍💼 Admin Panel
 
@@ -101,10 +109,27 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 - Generate comprehensive reports
 
 #### Teacher Management
+- **Complete Teacher Management**: Add, edit, delete teachers
+- **Password Reset**: Reset teacher passwords
+- **Subject Assignment**: Assign subjects to teachers
+- **Department Management**: Organize teachers by departments
+- **Status Control**: Activate/deactivate teacher accounts
 - **Note**: Only admins can add teachers (as requested)
-- Teacher accounts are created through admin panel
-- Assign subjects to teachers
-- Monitor teacher performance
+
+#### Subject Management
+- **Add/Edit/Delete Subjects**: Full CRUD operations for subjects
+- **Year-Specific Organization**: Subjects categorized by academic year
+- **Semester Management**: Organize subjects by semesters
+- **Teacher Assignment**: Assign teachers to subjects
+- **Credit System**: Manage subject credits
+- **Enrollment Control**: Automatic student enrollment
+
+#### Course Management
+- **Course Programs**: Add, edit, delete course programs
+- **Department Organization**: Courses organized by departments
+- **Duration Control**: Set course duration in years
+- **Student Tracking**: Monitor student enrollment per course
+- **Status Management**: Activate/deactivate courses
 
 #### System Analytics
 - Overall attendance statistics
@@ -187,7 +212,20 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 3. Mark students as Present/Absent/Late
 4. Changes are saved automatically
 
-#### 3. View Statistics
+#### 3. Profile Management
+1. Click "Profile" in navigation menu
+2. Update personal information
+3. Change password securely
+4. Update department and qualification details
+
+#### 4. Subject Management
+1. Go to Profile page
+2. View currently assigned subjects
+3. Request assignment to new subjects
+4. Remove yourself from subjects (with restrictions)
+5. View subject details and enrolled students
+
+#### 5. View Statistics
 - Dashboard shows real-time attendance percentages
 - Recent attendance records
 - Subject-wise enrolled student counts
@@ -200,12 +238,28 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 3. Access admin dashboard
 
 #### 2. Manage Teachers
-1. Navigate to teacher management section
+1. Navigate to "Teachers" in navigation menu
 2. Add new teachers with complete details
-3. Assign subjects to teachers
-4. Monitor teacher performance
+3. Edit existing teacher information
+4. Reset teacher passwords
+5. Assign/reassign subjects to teachers
+6. Activate/deactivate teacher accounts
 
-#### 3. Generate Reports
+#### 3. Manage Subjects
+1. Go to "Subjects" in navigation menu
+2. Add new subjects with year/semester assignment
+3. Edit subject details and teacher assignments
+4. Delete subjects (with validation)
+5. Organize subjects by academic year and semester
+
+#### 4. Manage Courses
+1. Navigate to "Courses" in navigation menu
+2. Add new course programs
+3. Edit course details and duration
+4. Monitor student enrollment per course
+5. Activate/deactivate courses
+
+#### 5. Generate Reports
 1. Go to reports section
 2. Select date range and filters
 3. Choose subject (optional)
@@ -222,9 +276,11 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 - semesters (semester organization)
 - subjects (year-specific subjects)
 - student_subjects (enrollment tracking)
+- course_programs (course management)
 - attendance (enhanced with geolocation)
 - otp_verification (multi-user OTP)
 - password_reset_tokens (password recovery)
+- campus_location (geolocation settings)
 ```
 
 ### File Structure
@@ -232,12 +288,16 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 attendance_system/
 ├── admin/
 │   ├── dashboard.php (admin interface)
+│   ├── manage_subjects.php (subject management)
+│   ├── manage_teachers.php (teacher management)
+│   ├── manage_courses.php (course management)
 │   └── logout.php
 ├── student/
 │   ├── dashboard.php (student interface)
 │   └── logout.php
 ├── teacher/
 │   ├── dashboard.php (teacher interface)
+│   ├── profile.php (teacher profile management)
 │   └── logout.php
 ├── includes/
 │   ├── config.php (enhanced configuration)
@@ -267,11 +327,14 @@ attendance_system/
 3. **Geolocation**: Campus-based attendance marking
 4. **Sign-up System**: Complete student registration
 5. **Forgot Password**: Email-based password recovery
-6. **Subject Management**: Year-specific subject organization
-7. **Teacher Component**: Complete teacher functionality
-8. **Admin Panel**: Enhanced with teacher management
+6. **Subject Management**: Year-specific subject organization with add/edit/delete
+7. **Teacher Component**: Complete teacher functionality with self-management
+8. **Admin Panel**: Enhanced with comprehensive management system
 9. **PDF Reports**: Student and admin report generation
 10. **Academic Structure**: Year/semester/subject organization
+11. **Faculty Management**: Add/edit/delete teachers and faculty
+12. **Course Management**: Add/edit/delete course programs
+13. **Teacher Self-Management**: Profile updates and subject requests
 
 ### 🌟 Additional Enhancements
 - Responsive mobile design

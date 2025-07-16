@@ -168,6 +168,18 @@ CREATE TABLE IF NOT EXISTS campus_location (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Course programs table
+CREATE TABLE IF NOT EXISTS course_programs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL,
+    course_code VARCHAR(20) UNIQUE NOT NULL,
+    department VARCHAR(100) NOT NULL,
+    duration_years INT NOT NULL,
+    description TEXT,
+    status ENUM('active', 'inactive') DEFAULT 'active',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Insert sample data
 
 -- Admin user
@@ -239,6 +251,13 @@ INSERT INTO student_subjects (student_id, subject_code, enrollment_date) VALUES
 ('STU002', 'CS201', '2024-01-15'),
 ('STU002', 'CS202', '2024-01-15'),
 ('STU002', 'MATH201', '2024-01-15');
+
+-- Sample Course Programs
+INSERT INTO course_programs (course_name, course_code, department, duration_years, description) VALUES 
+('Bachelor of Computer Applications', 'BCA', 'Computer Science', 3, 'A comprehensive undergraduate program in computer applications'),
+('Master of Computer Applications', 'MCA', 'Computer Science', 2, 'A postgraduate program in computer applications'),
+('Bachelor of Science in Computer Science', 'BSC-CS', 'Computer Science', 3, 'A degree program focused on computer science fundamentals'),
+('Bachelor of Technology', 'B.Tech', 'Computer Science', 4, 'An engineering degree in computer science and technology');
 
 -- Legacy courses table (keeping for backward compatibility)
 INSERT INTO courses (course_code, course_name, instructor, schedule_time, schedule_day, room) VALUES 
