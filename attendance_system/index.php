@@ -27,14 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $expires_at = date('Y-m-d H:i:s', strtotime('+' . OTP_EXPIRY_MINUTES . ' minutes'));
             
             // Store OTP in database
-            $stmt = $pdo->prepare("INSERT INTO otp_verification (student_id, otp_code, phone, expires_at) VALUES (?, ?, ?, ?)");
-            $stmt->execute([$student_id, $otp, $student['phone'], $expires_at]);
+            $stmt = $pdo->prepare("INSERT INTO otp_verification (student_id, otp_code, email, expires_at) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$student_id, $otp, $student['email'], $expires_at]);
             
-            // Send OTP (simulated)
-            sendOTP($student['phone'], $otp);
+            // Send OTP via email
+            $student_name = $student['first_name'] . ' ' . $student['last_name'];
+            sendOTP($student['email'], $otp, $student_name);
             
             $_SESSION['temp_student_id'] = $student_id;
-            $success = "OTP sent to your registered phone number.";
+            $success = "OTP sent to your registered email address.";
         } else {
             $error = "Invalid credentials!";
         }
@@ -154,7 +155,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                         <span class="input-group-text"><i class="fas fa-key"></i></span>
                                         <input type="text" class="form-control" name="otp" maxlength="6" required>
                                     </div>
-                                    <small class="text-muted">OTP expires in 5 minutes</small>
+                                    <small class="text-muted">Check your email for the OTP code. Code expires in 5 minutes.</small>
                                 </div>
                                 
                                 <button type="submit" name="verify_otp" class="btn btn-success w-100 mb-3">
@@ -178,15 +179,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <h1 class="display-4 fw-bold mb-4">
                         <i class="fas fa-graduation-cap"></i> College Attendance
                     </h1>
-                    <p class="lead mb-4">Modern attendance management system with location verification and OTP authentication</p>
+                    <p class="lead mb-4">Modern attendance management system with location verification and email OTP authentication</p>
                     <div class="row text-center">
                         <div class="col-4">
                             <i class="fas fa-map-marker-alt fa-3x mb-3"></i>
                             <h5>Location Verified</h5>
                         </div>
                         <div class="col-4">
-                            <i class="fas fa-mobile-alt fa-3x mb-3"></i>
-                            <h5>OTP Secured</h5>
+                            <i class="fas fa-envelope fa-3x mb-3"></i>
+                            <h5>Email OTP</h5>
                         </div>
                         <div class="col-4">
                             <i class="fas fa-clock fa-3x mb-3"></i>

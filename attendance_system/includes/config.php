@@ -58,11 +58,80 @@ function sanitizeInput($input) {
     return htmlspecialchars(strip_tags(trim($input)));
 }
 
-// Function to send OTP (simulated - in production, integrate with SMS service)
-function sendOTP($phone, $otp) {
-    // In production, integrate with SMS service like Twilio
-    // For now, we'll just log it (in real app, you'd send SMS)
-    error_log("OTP for $phone: $otp");
+// Email configuration for OTP
+define('SMTP_HOST', 'localhost');
+define('SMTP_PORT', 587);
+define('SMTP_USERNAME', 'your_email@college.edu');
+define('SMTP_PASSWORD', 'your_email_password');
+define('FROM_EMAIL', 'noreply@college.edu');
+define('FROM_NAME', 'College Attendance System');
+
+// Function to send OTP via email
+function sendOTP($email, $otp, $student_name = 'Student') {
+    $subject = "Your Attendance System OTP Code";
+    $message = "
+    <html>
+    <head>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
+            .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .header { background-color: #007bff; color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }
+            .content { padding: 20px; }
+            .otp-code { font-size: 28px; font-weight: bold; color: #007bff; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 5px; margin: 20px 0; letter-spacing: 5px; }
+            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
+            .warning { background-color: #fff3cd; color: #856404; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        </style>
+    </head>
+    <body>
+        <div class='container'>
+            <div class='header'>
+                <h1>🎓 College Attendance System</h1>
+                <p>OTP Verification Code</p>
+            </div>
+            <div class='content'>
+                <p>Dear $student_name,</p>
+                <p>You have requested to login to the College Attendance Management System. Please use the following OTP code to complete your login:</p>
+                
+                <div class='otp-code'>$otp</div>
+                
+                <div class='warning'>
+                    <strong>⚠️ Important:</strong>
+                    <ul>
+                        <li>This OTP is valid for 5 minutes only</li>
+                        <li>Do not share this code with anyone</li>
+                        <li>If you didn't request this code, please ignore this email</li>
+                    </ul>
+                </div>
+                
+                <p>If you're having trouble logging in, please contact your system administrator.</p>
+                
+                <p>Best regards,<br>College Attendance System</p>
+            </div>
+            <div class='footer'>
+                <p>This is an automated email. Please do not reply to this message.</p>
+                <p>© " . date('Y') . " College Attendance Management System</p>
+            </div>
+        </div>
+    </body>
+    </html>";
+    
+    $headers = "MIME-Version: 1.0" . "\r\n";
+    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
+    $headers .= "From: " . FROM_NAME . " <" . FROM_EMAIL . ">" . "\r\n";
+    $headers .= "Reply-To: " . FROM_EMAIL . "\r\n";
+    $headers .= "X-Mailer: PHP/" . phpversion();
+    
+    // For production, use a proper email library like PHPMailer or SwiftMailer
+    // For now, using PHP's built-in mail function
+    $result = mail($email, $subject, $message, $headers);
+    
+    if (!$result) {
+        error_log("Failed to send OTP email to: $email");
+        return false;
+    }
+    
+    // Log for debugging (remove in production)
+    error_log("OTP sent to email $email: $otp");
     return true;
 }
 

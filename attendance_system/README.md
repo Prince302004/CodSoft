@@ -5,7 +5,7 @@ A modern, web-based attendance management system for colleges and universities w
 ## Features
 
 ### 🔐 Authentication & Security
-- **OTP Verification**: SMS-based OTP verification for secure login
+- **OTP Verification**: Email-based OTP verification for secure login
 - **Geolocation Verification**: Students can only mark attendance when on campus
 - **Session Management**: Secure session handling with proper logout
 - **Role-based Access**: Separate interfaces for students and administrators
@@ -74,6 +74,16 @@ define('CAMPUS_LONGITUDE', -74.0060); // Your campus longitude
 define('CAMPUS_RADIUS', 100);         // Radius in meters
 ```
 
+3. Configure email settings for OTP delivery:
+```php
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 587);
+define('SMTP_USERNAME', 'your_email@gmail.com');
+define('SMTP_PASSWORD', 'your_app_password');
+define('FROM_EMAIL', 'your_email@gmail.com');
+define('FROM_NAME', 'College Attendance System');
+```
+
 ### Step 4: Web Server Setup
 1. Place files in your web server document root
 2. Ensure proper permissions for PHP files
@@ -91,7 +101,7 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 
 #### Login Process
 1. Enter your Student ID and password
-2. You'll receive an OTP on your registered phone
+2. You'll receive an OTP in your registered email
 3. Enter the OTP to complete login
 4. Enable location services when prompted
 
@@ -133,7 +143,8 @@ define('CAMPUS_RADIUS', 100);         // Radius in meters
 - 6-digit OTP with 5-minute expiration
 - One-time use tokens
 - Secure OTP storage in database
-- SMS integration ready (currently simulated)
+- Email delivery with professional HTML templates
+- SMTP integration ready (PHPMailer support)
 
 ### Session Management
 - Secure session handling with proper timeout
@@ -158,15 +169,26 @@ define('OTP_EXPIRY_MINUTES', 5);
 define('OTP_LENGTH', 6);
 ```
 
-### SMS Integration
-Replace the simulated SMS function in `includes/config.php` with actual SMS service:
+### Email Configuration
+Configure email settings in `includes/config.php`:
 ```php
-function sendOTP($phone, $otp) {
-    // Integrate with Twilio, Nexmo, or other SMS service
-    // Example: Send actual SMS here
-    return true;
-}
+// Basic email configuration
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 587);
+define('SMTP_USERNAME', 'your_email@gmail.com');
+define('SMTP_PASSWORD', 'your_app_password');
+define('FROM_EMAIL', 'your_email@gmail.com');
+define('FROM_NAME', 'College Attendance System');
 ```
+
+### PHPMailer Setup (Recommended for Production)
+1. Install PHPMailer via Composer:
+```bash
+composer require phpmailer/phpmailer
+```
+
+2. Uncomment PHPMailer code in `includes/phpmailer_config.php`
+3. Use `sendOTPWithPHPMailer()` function for enhanced email delivery
 
 ## File Structure
 
@@ -180,6 +202,7 @@ attendance_system/
 │   └── logout.php         # Student logout
 ├── includes/              # Core PHP files
 │   ├── config.php         # Database config and functions
+│   ├── phpmailer_config.php # Email configuration and templates
 │   ├── mark_attendance.php # Attendance marking logic
 │   └── get_recent_attendance.php # Attendance data retrieval
 ├── css/                   # Stylesheets
@@ -200,7 +223,7 @@ attendance_system/
 - **admin**: Administrator accounts
 - **courses**: Course details and schedules
 - **attendance**: Attendance records with location data
-- **otp_verification**: OTP tokens and verification status
+- **otp_verification**: Email OTP tokens and verification status
 - **campus_location**: Campus location configuration
 
 ## Browser Support
@@ -242,22 +265,27 @@ For support and questions:
 
 ### Version 1.0.0
 - Initial release with core attendance functionality
-- OTP verification system
+- Email-based OTP verification system
+- Professional HTML email templates
 - Geolocation verification
 - Student and admin dashboards
 - Mobile-responsive design
+- PHPMailer integration support
 
 ## Future Enhancements
 
 - [ ] Student management interface
 - [ ] Course scheduling system
 - [ ] Attendance reports and analytics
-- [ ] Email notifications
+- [ ] Email notifications for low attendance
+- [ ] Email queuing system for high volume
 - [ ] Mobile app development
 - [ ] Biometric authentication
 - [ ] Integration with student information systems
 - [ ] Automated attendance notifications
 - [ ] Advanced analytics and insights
+- [ ] Multi-language email templates
+- [ ] Email delivery tracking and analytics
 
 ---
 

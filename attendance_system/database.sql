@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS otp_verification (
     id INT AUTO_INCREMENT PRIMARY KEY,
     student_id VARCHAR(20) NOT NULL,
     otp_code VARCHAR(6) NOT NULL,
-    phone VARCHAR(15) NOT NULL,
+    email VARCHAR(100) NOT NULL,
     is_verified BOOLEAN DEFAULT FALSE,
     expires_at TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
