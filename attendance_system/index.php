@@ -6,48 +6,35 @@ if (isStudent()) {
     redirect('student/dashboard.php');
 } elseif (isAdmin()) {
     redirect('admin/dashboard.php');
-} elseif (isTeacher()) {
-    redirect('teacher/dashboard.php');
 }
 
 $error = '';
 $success = '';
-$login_type = 'student'; // Default login type
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (isset($_POST['login'])) {
-        $user_id = sanitizeInput($_POST['user_id']);
+        $student_id = sanitizeInput($_POST['student_id']);
         $password = $_POST['password'];
-        $login_type = sanitizeInput($_POST['login_type']);
         
-        $user = null;
+        // Check student credentials
+        $stmt = $pdo->prepare("SELECT * FROM students WHERE student_id = ? AND status = 'active'");
+        $stmt->execute([$student_id]);
+        $student = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        // Check credentials based on login type
-        if ($login_type == 'student') {
-            $stmt = $pdo->prepare("SELECT * FROM students WHERE student_id = ? AND status = 'active'");
-            $stmt->execute([$user_id]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        } elseif ($login_type == 'teacher') {
-            $stmt = $pdo->prepare("SELECT * FROM teachers WHERE teacher_id = ? AND status = 'active'");
-            $stmt->execute([$user_id]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-        }
-        
-        if ($user && password_verify($password, $user['password'])) {
+        if ($student && password_verify($password, $student['password'])) {
             // Generate OTP
             $otp = generateOTP();
             $expires_at = date('Y-m-d H:i:s', strtotime('+' . OTP_EXPIRY_MINUTES . ' minutes'));
             
             // Store OTP in database
-            $stmt = $pdo->prepare("INSERT INTO otp_verification (user_id, user_type, otp_code, email, expires_at) VALUES (?, ?, ?, ?, ?)");
-            $stmt->execute([$user_id, $login_type, $otp, $user['email'], $expires_at]);
+            $stmt = $pdo->prepare("INSERT INTO otp_verification (student_id, otp_code, email, expires_at) VALUES (?, ?, ?, ?)");
+            $stmt->execute([$student_id, $otp, $student['email'], $expires_at]);
             
             // Send OTP via email
-            $user_name = $user['first_name'] . ' ' . $user['last_name'];
-            sendOTP($user['email'], $otp, $user_name);
+            $student_name = $student['first_name'] . ' ' . $student['last_name'];
+            sendOTP($student['email'], $otp, $student_name);
             
-            $_SESSION['temp_user_id'] = $user_id;
-            $_SESSION['temp_user_type'] = $login_type;
+            $_SESSION['temp_student_id'] = $student_id;
             $success = "OTP sent to your registered email address.";
         } else {
             $error = "Invalid credentials!";
@@ -56,12 +43,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     if (isset($_POST['verify_otp'])) {
         $otp = sanitizeInput($_POST['otp']);
-        $user_id = $_SESSION['temp_user_id'];
-        $user_type = $_SESSION['temp_user_type'];
+        $student_id = $_SESSION['temp_student_id'];
         
         // Verify OTP
-        $stmt = $pdo->prepare("SELECT * FROM otp_verification WHERE user_id = ? AND user_type = ? AND otp_code = ? AND expires_at > NOW() AND is_verified = FALSE ORDER BY created_at DESC LIMIT 1");
-        $stmt->execute([$user_id, $user_type, $otp]);
+        $stmt = $pdo->prepare("SELECT * FROM otp_verification WHERE student_id = ? AND otp_code = ? AND expires_at > NOW() AND is_verified = FALSE ORDER BY created_at DESC LIMIT 1");
+        $stmt->execute([$student_id, $otp]);
         $otp_record = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($otp_record) {
@@ -69,19 +55,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt = $pdo->prepare("UPDATE otp_verification SET is_verified = TRUE WHERE id = ?");
             $stmt->execute([$otp_record['id']]);
             
-            // Set session based on user type
-            if ($user_type == 'student') {
-                $_SESSION['student_id'] = $user_id;
-                $redirect_url = 'student/dashboard.php';
-            } elseif ($user_type == 'teacher') {
-                $_SESSION['teacher_id'] = $user_id;
-                $redirect_url = 'teacher/dashboard.php';
-            }
+            // Set session
+            $_SESSION['student_id'] = $student_id;
+            unset($_SESSION['temp_student_id']);
             
-            unset($_SESSION['temp_user_id']);
-            unset($_SESSION['temp_user_type']);
-            
-            redirect($redirect_url);
+            redirect('student/dashboard.php');
         } else {
             $error = "Invalid or expired OTP!";
         }
@@ -143,29 +121,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             </div>
                         <?php endif; ?>
                         
-                        <!-- User Login Form -->
-                        <div id="user-login-form" <?php echo isset($_SESSION['temp_user_id']) ? 'style="display:none;"' : ''; ?>>
+                        <!-- Student Login Form -->
+                        <div id="student-login-form" <?php echo isset($_SESSION['temp_student_id']) ? 'style="display:none;"' : ''; ?>>
                             <form method="POST">
                                 <div class="mb-3">
-                                    <label class="form-label">I am a:</label>
-                                    <div class="btn-group w-100" role="group">
-                                        <input type="radio" class="btn-check" name="login_type" id="student" value="student" checked>
-                                        <label class="btn btn-outline-primary" for="student">
-                                            <i class="fas fa-user-graduate"></i> Student
-                                        </label>
-                                        
-                                        <input type="radio" class="btn-check" name="login_type" id="teacher" value="teacher">
-                                        <label class="btn btn-outline-primary" for="teacher">
-                                            <i class="fas fa-chalkboard-teacher"></i> Teacher
-                                        </label>
-                                    </div>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <label class="form-label" id="user-id-label">Student ID</label>
+                                    <label class="form-label">Student ID</label>
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="fas fa-user"></i></span>
-                                        <input type="text" class="form-control" name="user_id" required>
+                                        <input type="text" class="form-control" name="student_id" required>
                                     </div>
                                 </div>
                                 
@@ -181,23 +144,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <i class="fas fa-sign-in-alt"></i> Sign In
                                 </button>
                             </form>
-                            
-                            <div class="row">
-                                <div class="col-6">
-                                    <a href="signup.php" class="btn btn-outline-success w-100">
-                                        <i class="fas fa-user-plus"></i> Sign Up
-                                    </a>
-                                </div>
-                                <div class="col-6">
-                                    <a href="forgot_password.php" class="btn btn-outline-warning w-100">
-                                        <i class="fas fa-key"></i> Forgot Password
-                                    </a>
-                                </div>
-                            </div>
                         </div>
                         
                         <!-- OTP Verification Form -->
-                        <div id="otp-verification-form" <?php echo !isset($_SESSION['temp_user_id']) ? 'style="display:none;"' : ''; ?>>
+                        <div id="otp-verification-form" <?php echo !isset($_SESSION['temp_student_id']) ? 'style="display:none;"' : ''; ?>>
                             <form method="POST">
                                 <div class="mb-3">
                                     <label class="form-label">Enter OTP</label>
@@ -212,12 +162,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                                     <i class="fas fa-check"></i> Verify OTP
                                 </button>
                             </form>
-                            
-                            <div class="text-center">
-                                <button class="btn btn-outline-secondary" onclick="location.reload()">
-                                    <i class="fas fa-arrow-left"></i> Back to Login
-                                </button>
-                            </div>
                         </div>
                         
                         <div class="text-center">
@@ -284,24 +228,5 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/main.js"></script>
-    
-    <script>
-        // Handle user type selection
-        document.querySelectorAll('input[name="login_type"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const userIdLabel = document.getElementById('user-id-label');
-                if (this.value === 'student') {
-                    userIdLabel.textContent = 'Student ID';
-                } else if (this.value === 'teacher') {
-                    userIdLabel.textContent = 'Teacher ID';
-                }
-            });
-        });
-        
-        function toggleAdminLogin() {
-            const adminModal = new bootstrap.Modal(document.getElementById('adminLoginModal'));
-            adminModal.show();
-        }
-    </script>
 </body>
 </html>

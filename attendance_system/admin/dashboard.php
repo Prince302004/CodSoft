@@ -92,28 +92,6 @@ $low_attendance_students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php">
-                            <i class="fas fa-tachometer-alt"></i> Dashboard
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_subjects.php">
-                            <i class="fas fa-book"></i> Subjects
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_teachers.php">
-                            <i class="fas fa-chalkboard-teacher"></i> Teachers
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="manage_courses.php">
-                            <i class="fas fa-graduation-cap"></i> Courses
-                        </a>
-                    </li>
-                </ul>
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
@@ -121,6 +99,7 @@ $low_attendance_students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                         </a>
                         <ul class="dropdown-menu">
                             <li><a class="dropdown-item" href="students.php"><i class="fas fa-users"></i> Manage Students</a></li>
+                            <li><a class="dropdown-item" href="courses.php"><i class="fas fa-book"></i> Manage Courses</a></li>
                             <li><a class="dropdown-item" href="reports.php"><i class="fas fa-chart-bar"></i> Reports</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a></li>

@@ -189,30 +189,21 @@ $isXAMPP = (strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) &&
             </div>
         </div>
 
-        <!-- Email Configuration (PHPMailer) -->
+        <!-- Email Configuration -->
         <div class="card setup-card">
             <div class="card-header">
-                <h4><i class="fas fa-envelope"></i> Email Configuration (PHPMailer)</h4>
+                <h4><i class="fas fa-envelope"></i> Email Configuration</h4>
             </div>
             <div class="card-body">
                 <?php
                 if (file_exists('includes/config.php')) {
                     require_once 'includes/config.php';
                     
-                    echo "<div class='status-check'><strong>Email System:</strong> PHPMailer (replaces mail() function)</div>";
                     echo "<div class='status-check'><strong>SMTP Host:</strong> " . (defined('SMTP_HOST') ? SMTP_HOST : 'Not configured') . "</div>";
                     echo "<div class='status-check'><strong>SMTP Port:</strong> " . (defined('SMTP_PORT') ? SMTP_PORT : 'Not configured') . "</div>";
                     echo "<div class='status-check'><strong>From Email:</strong> " . (defined('FROM_EMAIL') ? FROM_EMAIL : 'Not configured') . "</div>";
                     
-                    // Check PHPMailer availability
-                    if (isset($phpmailer_available) && $phpmailer_available) {
-                        echo "<div class='status-check status-ok'><i class='fas fa-check'></i> PHPMailer library is available</div>";
-                    } else {
-                        echo "<div class='status-check status-error'><i class='fas fa-times'></i> PHPMailer library not found</div>";
-                    }
-                    
-                    // Check configuration
-                    if (function_exists('isEmailConfigured') && isEmailConfigured()) {
+                    if (defined('SMTP_USERNAME') && SMTP_USERNAME !== 'your_email@gmail.com') {
                         echo "<div class='status-check status-ok'><i class='fas fa-check'></i> Email configuration appears to be set up</div>";
                     } else {
                         echo "<div class='status-check status-warning'><i class='fas fa-exclamation-triangle'></i> Email configuration needs to be updated</div>";
@@ -224,8 +215,6 @@ $isXAMPP = (strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) &&
                 
                 <div class="mt-3">
                     <a href="test_email.php" class="btn btn-primary">Test Email Configuration</a>
-                    <a href="install_phpmailer.php" class="btn btn-warning">Install PHPMailer</a>
-                    <a href="PHPMAILER_SETUP.md" class="btn btn-info" target="_blank">PHPMailer Setup Guide</a>
                 </div>
             </div>
         </div>
@@ -270,11 +259,10 @@ $isXAMPP = (strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) &&
                             <li>Import the <code>database.sql</code> file</li>
                         </ul>
                     </li>
-                    <li><strong>Email Configuration (PHPMailer):</strong>
+                    <li><strong>Email Configuration:</strong>
                         <ul>
-                            <li>Install PHPMailer: <code>composer install</code> or manual download</li>
-                            <li>Edit <code>includes/phpmailer_setup.php</code></li>
-                            <li>Update email credentials (Gmail App Password recommended)</li>
+                            <li>Edit <code>includes/config.php</code></li>
+                            <li>Update email credentials (Gmail recommended)</li>
                             <li>Test email using the test script</li>
                         </ul>
                     </li>
@@ -299,8 +287,7 @@ $isXAMPP = (strpos($_SERVER['SERVER_SOFTWARE'], 'Apache') !== false) &&
         <div class="text-center mt-4 mb-4">
             <p class="text-muted">
                 For detailed setup instructions, see <code>XAMPP_SETUP.md</code><br>
-                For PHPMailer configuration help, see <code>PHPMAILER_SETUP.md</code><br>
-                For complete features guide, see <code>COMPLETE_FEATURES_GUIDE.md</code>
+                For email configuration help, see <code>EMAIL_SETUP.md</code>
             </p>
         </div>
     </div>
