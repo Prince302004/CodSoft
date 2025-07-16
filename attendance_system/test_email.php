@@ -1,139 +1,229 @@
 <?php
 /**
- * Email OTP Test Script
+ * Email Configuration Test Script
  * 
- * This script helps you test the email OTP functionality
- * Run this script to verify your email configuration is working
+ * This script tests the PHPMailer configuration and sends a test email
  */
 
 require_once 'includes/config.php';
 
-// Test configuration
-$test_email = 'test@example.com'; // Change to your test email
-$test_student_name = 'Test Student';
-$test_otp = generateOTP();
+$message = '';
+$error = '';
 
-echo "<!DOCTYPE html>
-<html lang='en'>
-<head>
-    <meta charset='UTF-8'>
-    <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-    <title>Email OTP Test</title>
-    <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css' rel='stylesheet'>
-</head>
-<body>
-    <div class='container mt-5'>
-        <div class='row justify-content-center'>
-            <div class='col-md-8'>
-                <div class='card'>
-                    <div class='card-header'>
-                        <h3>Email OTP Test Results</h3>
-                    </div>
-                    <div class='card-body'>";
-
-// Display current configuration
-echo "<h5>Current Email Configuration:</h5>
-      <ul>
-          <li><strong>SMTP Host:</strong> " . SMTP_HOST . "</li>
-          <li><strong>SMTP Port:</strong> " . SMTP_PORT . "</li>
-          <li><strong>From Email:</strong> " . FROM_EMAIL . "</li>
-          <li><strong>From Name:</strong> " . FROM_NAME . "</li>
-      </ul>";
-
-// Test email sending
-echo "<h5>Testing Email Delivery:</h5>";
-echo "<p><strong>Test Email:</strong> $test_email</p>";
-echo "<p><strong>Generated OTP:</strong> $test_otp</p>";
-
-// Attempt to send email
-$start_time = microtime(true);
-$result = sendOTP($test_email, $test_otp, $test_student_name);
-$end_time = microtime(true);
-$execution_time = round(($end_time - $start_time) * 1000, 2);
-
-if ($result) {
-    echo "<div class='alert alert-success'>
-            <h6>✅ Email sent successfully!</h6>
-            <p>Execution time: {$execution_time}ms</p>
-            <p>Check your email inbox (and spam folder) for the OTP.</p>
-          </div>";
-} else {
-    echo "<div class='alert alert-danger'>
-            <h6>❌ Email delivery failed!</h6>
-            <p>Execution time: {$execution_time}ms</p>
-            <p>Please check your email configuration and server logs.</p>
-          </div>";
+// Process form submission
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $test_email = sanitizeInput($_POST['test_email']);
+    
+    if (empty($test_email)) {
+        $error = "Please enter a test email address";
+    } elseif (!filter_var($test_email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Please enter a valid email address";
+    } else {
+        // Test email configuration
+        if (testEmailConfiguration($test_email)) {
+            $message = "Test email sent successfully to: $test_email";
+        } else {
+            $error = "Failed to send test email. Please check your configuration.";
+        }
+    }
 }
 
-// Display troubleshooting information
-echo "<h5>Troubleshooting:</h5>
-      <div class='alert alert-info'>
-          <h6>Common Issues:</h6>
-          <ul>
-              <li>Check SMTP credentials in <code>includes/config.php</code></li>
-              <li>Verify firewall doesn't block SMTP ports</li>
-              <li>Ensure PHP mail() function is enabled</li>
-              <li>Check server error logs for detailed error messages</li>
-              <li>For Gmail: Use App Password instead of regular password</li>
-              <li>For production: Consider using PHPMailer</li>
-          </ul>
-      </div>";
-
-// Display server information
-echo "<h5>Server Information:</h5>
-      <ul>
-          <li><strong>PHP Version:</strong> " . phpversion() . "</li>
-          <li><strong>Mail Function:</strong> " . (function_exists('mail') ? 'Available' : 'Not Available') . "</li>
-          <li><strong>OpenSSL:</strong> " . (extension_loaded('openssl') ? 'Available' : 'Not Available') . "</li>
-          <li><strong>Server Time:</strong> " . date('Y-m-d H:i:s') . "</li>
-      </ul>";
-
-// Email template preview
-echo "<h5>Email Template Preview:</h5>
-      <div class='border p-3' style='max-height: 400px; overflow-y: auto;'>
-          <iframe srcdoc='" . htmlspecialchars(getOTPEmailTemplate($test_otp, $test_student_name)) . "' 
-                  style='width: 100%; height: 300px; border: none;'></iframe>
-      </div>";
-
-echo "      </div>
+// Get current configuration status
+$config_status = isEmailConfigured();
+?>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Test - College Attendance System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .test-header {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        .config-check {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        .config-ok {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .config-error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .config-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <h1><i class="fas fa-envelope-open-text"></i> Email Configuration Test</h1>
+                    <p class="lead">Test PHPMailer Email Configuration</p>
+                </div>
             </div>
         </div>
     </div>
-</div>
-</body>
-</html>";
 
-// Function to get email template (fallback if not using PHPMailer)
-function getOTPEmailTemplate($otp, $student_name) {
-    return "
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f4f4f4; }
-            .container { max-width: 600px; margin: 0 auto; background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-            .header { background-color: #007bff; color: white; padding: 20px; border-radius: 10px 10px 0 0; text-align: center; }
-            .content { padding: 20px; }
-            .otp-code { font-size: 28px; font-weight: bold; color: #007bff; text-align: center; padding: 20px; background-color: #f8f9fa; border-radius: 5px; margin: 20px 0; letter-spacing: 5px; }
-            .footer { text-align: center; padding: 20px; color: #666; font-size: 14px; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h1>🎓 College Attendance System</h1>
-                <p>OTP Verification Code</p>
-            </div>
-            <div class='content'>
-                <p>Dear $student_name,</p>
-                <p>Your OTP code is:</p>
-                <div class='otp-code'>$otp</div>
-                <p>This code is valid for 5 minutes only.</p>
-            </div>
-            <div class='footer'>
-                <p>© " . date('Y') . " College Attendance System</p>
+    <div class="container mt-4">
+        <!-- Configuration Status -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-cogs"></i> Current Configuration Status</h4>
+                    </div>
+                    <div class="card-body">
+                        <?php if ($config_status): ?>
+                            <div class="config-check config-ok">
+                                <i class="fas fa-check-circle"></i> 
+                                <strong>Configuration Status:</strong> Ready
+                                <p class="mb-0 mt-2">PHPMailer is configured and ready to send emails.</p>
+                            </div>
+                        <?php else: ?>
+                            <div class="config-check config-error">
+                                <i class="fas fa-exclamation-triangle"></i> 
+                                <strong>Configuration Status:</strong> Not Ready
+                                <p class="mb-0 mt-2">PHPMailer configuration needs to be updated. Please check the following:</p>
+                                <ul class="mt-2">
+                                    <li>Update SMTP_USERNAME in phpmailer_setup.php</li>
+                                    <li>Update SMTP_PASSWORD in phpmailer_setup.php</li>
+                                    <li>Update FROM_EMAIL in phpmailer_setup.php</li>
+                                    <li>Ensure PHPMailer library is installed</li>
+                                </ul>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Current Settings Display -->
+                        <div class="mt-3">
+                            <h6>Current Settings:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>SMTP Host:</strong> <?php echo defined('SMTP_HOST') ? SMTP_HOST : 'Not defined'; ?></p>
+                                    <p><strong>SMTP Port:</strong> <?php echo defined('SMTP_PORT') ? SMTP_PORT : 'Not defined'; ?></p>
+                                    <p><strong>SMTP Security:</strong> <?php echo defined('SMTP_SECURE') ? SMTP_SECURE : 'Not defined'; ?></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>From Email:</strong> <?php echo defined('FROM_EMAIL') ? FROM_EMAIL : 'Not defined'; ?></p>
+                                    <p><strong>From Name:</strong> <?php echo defined('FROM_NAME') ? FROM_NAME : 'Not defined'; ?></p>
+                                    <p><strong>PHPMailer Available:</strong> <?php echo isset($phpmailer_available) && $phpmailer_available ? 'Yes' : 'No'; ?></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </body>
-    </html>";
-}
-?>
+
+        <!-- Test Form -->
+        <div class="row">
+            <div class="col-md-8 mx-auto">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-paper-plane"></i> Send Test Email</h4>
+                    </div>
+                    <div class="card-body">
+                        <?php if ($error): ?>
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i> <?php echo $error; ?>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <?php if ($message): ?>
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> <?php echo $message; ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="POST">
+                            <div class="mb-3">
+                                <label for="test_email" class="form-label">Test Email Address</label>
+                                <input type="email" class="form-control" id="test_email" name="test_email" 
+                                       placeholder="Enter email address to test" required
+                                       value="<?php echo htmlspecialchars($_POST['test_email'] ?? ''); ?>">
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle"></i> 
+                                    A test email will be sent to this address to verify configuration.
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Test Email
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h4><i class="fas fa-question-circle"></i> Setup Instructions</h4>
+                    </div>
+                    <div class="card-body">
+                        <h6>To configure PHPMailer for Gmail:</h6>
+                        <ol>
+                            <li><strong>Install PHPMailer:</strong>
+                                <ul>
+                                    <li>Via Composer: <code>composer install</code></li>
+                                    <li>Or download PHPMailer files to <code>includes/phpmailer/</code></li>
+                                </ul>
+                            </li>
+                            <li><strong>Enable 2-Factor Authentication</strong> on your Gmail account</li>
+                            <li><strong>Generate App Password:</strong>
+                                <ul>
+                                    <li>Go to Google Account settings</li>
+                                    <li>Security → App passwords</li>
+                                    <li>Generate password for "Mail"</li>
+                                </ul>
+                            </li>
+                            <li><strong>Update Configuration:</strong>
+                                <p>Edit <code>includes/phpmailer_setup.php</code> and update:</p>
+                                <ul>
+                                    <li><code>SMTP_USERNAME</code> → Your Gmail address</li>
+                                    <li><code>SMTP_PASSWORD</code> → Your App Password (not regular password)</li>
+                                    <li><code>FROM_EMAIL</code> → Your Gmail address</li>
+                                </ul>
+                            </li>
+                        </ol>
+                        
+                        <div class="alert alert-info mt-3">
+                            <i class="fas fa-lightbulb"></i> 
+                            <strong>Pro Tip:</strong> Use App Passwords instead of your regular Gmail password for better security.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="text-center mt-4 mb-4">
+            <a href="index.php" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Login
+            </a>
+            <a href="xampp_quick_setup.php" class="btn btn-info">
+                <i class="fas fa-cogs"></i> XAMPP Setup
+            </a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
