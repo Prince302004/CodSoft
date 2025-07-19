@@ -246,6 +246,24 @@ $thisWeekAttendance = $stmt->fetchColumn();
                 </div>
             </div>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="mobile_attendance.php" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-mobile-alt"></i> Mobile Attendance
+                </a>
+                <a href="analytics.php" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-chart-line"></i> View Analytics
+                </a>
+                <a href="generate_report.php" class="btn btn-info btn-lg me-3">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </a>
+                <a href="logout.php" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
