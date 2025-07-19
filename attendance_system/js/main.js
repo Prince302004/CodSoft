@@ -104,14 +104,14 @@ function initializeEventListeners() {
 
 // Mark attendance function
 function markAttendance() {
-    if (!currentLocation) {
+    if (!window.currentLocation) {
         showAlert('Please enable location services to mark attendance.', 'danger');
         return;
     }
     
-    const courseCode = document.getElementById('course-select').value;
-    if (!courseCode) {
-        showAlert('Please select a course.', 'warning');
+    const subjectCode = document.getElementById('subject-select').value;
+    if (!subjectCode) {
+        showAlert('Please select a subject.', 'warning');
         return;
     }
     
@@ -123,12 +123,12 @@ function markAttendance() {
     
     // Send attendance data
     const formData = new FormData();
-    formData.append('course_code', courseCode);
-    formData.append('latitude', currentLocation.latitude);
-    formData.append('longitude', currentLocation.longitude);
+    formData.append('subject_code', subjectCode);
+    formData.append('latitude', window.currentLocation.latitude);
+    formData.append('longitude', window.currentLocation.longitude);
     formData.append('mark_attendance', '1');
     
-    fetch('includes/mark_attendance.php', {
+    fetch('mark_attendance.php', {
         method: 'POST',
         body: formData
     })
@@ -136,10 +136,15 @@ function markAttendance() {
     .then(data => {
         if (data.success) {
             showAlert(data.message, 'success');
-            refreshAttendanceTable();
-            document.getElementById('course-select').value = '';
+            // Refresh the page to show updated attendance
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         } else {
             showAlert(data.message, 'danger');
+            if (data.location_data) {
+                console.log('Location data:', data.location_data);
+            }
         }
     })
     .catch(error => {
@@ -221,7 +226,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 // Verify campus location
 function verifyCampusLocation() {
-    if (!currentLocation) {
+    if (!window.currentLocation) {
         return false;
     }
     
@@ -231,8 +236,8 @@ function verifyCampusLocation() {
     const campusRadius = 100; // meters
     
     const distance = calculateDistance(
-        currentLocation.latitude,
-        currentLocation.longitude,
+        window.currentLocation.latitude,
+        window.currentLocation.longitude,
         campusLat,
         campusLon
     );
@@ -243,7 +248,16 @@ function verifyCampusLocation() {
 // Update location display
 function updateLocationDisplay() {
     const locationDisplay = document.getElementById('location-display');
-    if (!locationDisplay || !currentLocation) return;
+    if (!locationDisplay) return;
+    
+    if (!window.currentLocation) {
+        locationDisplay.innerHTML = `
+            <span class="badge bg-warning">
+                <i class="fas fa-map-marker-alt"></i> Detecting location...
+            </span>
+        `;
+        return;
+    }
     
     const isOnCampus = verifyCampusLocation();
     const statusClass = isOnCampus ? 'success' : 'danger';
@@ -254,8 +268,8 @@ function updateLocationDisplay() {
             <i class="fas fa-map-marker-alt"></i> ${statusText}
         </span>
         <small class="text-muted d-block mt-1">
-            Lat: ${currentLocation.latitude.toFixed(6)}, 
-            Lon: ${currentLocation.longitude.toFixed(6)}
+            Lat: ${window.currentLocation.latitude.toFixed(6)}, 
+            Lon: ${window.currentLocation.longitude.toFixed(6)}
         </small>
     `;
 }
@@ -276,5 +290,5 @@ window.attendanceSystem = {
     showAlert,
     refreshAttendanceTable,
     verifyCampusLocation,
-    currentLocation: () => currentLocation
+    currentLocation: () => window.currentLocation
 };

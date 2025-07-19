@@ -11,15 +11,20 @@ $stmt = $pdo->prepare("SELECT * FROM students WHERE student_id = ?");
 $stmt->execute([$_SESSION['student_id']]);
 $student = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Get available courses
-$stmt = $pdo->prepare("SELECT * FROM courses ORDER BY course_name");
-$stmt->execute();
-$courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Get student's enrolled subjects
+$stmt = $pdo->prepare("SELECT ss.subject_code, s.subject_name, s.credits, t.first_name as teacher_first_name, t.last_name as teacher_last_name 
+                       FROM student_subjects ss 
+                       JOIN subjects s ON ss.subject_code = s.subject_code 
+                       JOIN teachers t ON s.teacher_id = t.teacher_id 
+                       WHERE ss.student_id = ? AND ss.status = 'enrolled' 
+                       ORDER BY s.subject_name");
+$stmt->execute([$_SESSION['student_id']]);
+$enrolled_subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // Get today's attendance
 $today = date('Y-m-d');
-$stmt = $pdo->prepare("SELECT a.*, c.course_name FROM attendance a 
-                       JOIN courses c ON a.course_code = c.course_code 
+$stmt = $pdo->prepare("SELECT a.*, s.subject_name FROM attendance a 
+                       JOIN subjects s ON a.subject_code = s.subject_code 
                        WHERE a.student_id = ? AND a.attendance_date = ? 
                        ORDER BY a.attendance_time DESC");
 $stmt->execute([$_SESSION['student_id'], $today]);
@@ -154,12 +159,13 @@ $thisWeekAttendance = $stmt->fetchColumn();
                     </h4>
                     <form id="attendance-form">
                         <div class="mb-3">
-                            <label for="course-select" class="form-label">Select Course</label>
-                            <select class="form-control" id="course-select" required>
-                                <option value="">Choose a course...</option>
-                                <?php foreach ($courses as $course): ?>
-                                    <option value="<?php echo htmlspecialchars($course['course_code']); ?>">
-                                        <?php echo htmlspecialchars($course['course_name']); ?> (<?php echo htmlspecialchars($course['course_code']); ?>)
+                            <label for="subject-select" class="form-label">Select Subject</label>
+                            <select class="form-control" id="subject-select" required>
+                                <option value="">Choose a subject...</option>
+                                <?php foreach ($enrolled_subjects as $subject): ?>
+                                    <option value="<?php echo htmlspecialchars($subject['subject_code']); ?>">
+                                        <?php echo htmlspecialchars($subject['subject_name']); ?> 
+                                        (<?php echo htmlspecialchars($subject['teacher_first_name'] . ' ' . $subject['teacher_last_name']); ?>)
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -198,7 +204,7 @@ $thisWeekAttendance = $stmt->fetchColumn();
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th>Course</th>
+                                        <th>Subject</th>
                                         <th>Time</th>
                                         <th>Status</th>
                                     </tr>
@@ -206,7 +212,7 @@ $thisWeekAttendance = $stmt->fetchColumn();
                                 <tbody>
                                     <?php foreach ($todayAttendance as $attendance): ?>
                                         <tr>
-                                            <td><?php echo htmlspecialchars($attendance['course_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($attendance['subject_name']); ?></td>
                                             <td><?php echo date('h:i A', strtotime($attendance['attendance_time'])); ?></td>
                                             <td>
                                                 <span class="badge bg-<?php echo $attendance['location_verified'] ? 'success' : 'warning'; ?>">
@@ -240,6 +246,24 @@ $thisWeekAttendance = $stmt->fetchColumn();
                 </div>
             </div>
         </div>
+
+        <!-- Action Buttons -->
+        <div class="row mt-4">
+            <div class="col-12 text-center">
+                <a href="mobile_attendance.php" class="btn btn-primary btn-lg me-3">
+                    <i class="fas fa-mobile-alt"></i> Mobile Attendance
+                </a>
+                <a href="analytics.php" class="btn btn-success btn-lg me-3">
+                    <i class="fas fa-chart-line"></i> View Analytics
+                </a>
+                <a href="generate_report.php" class="btn btn-info btn-lg me-3">
+                    <i class="fas fa-file-pdf"></i> Generate Report
+                </a>
+                <a href="logout.php" class="btn btn-outline-primary btn-lg">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -267,6 +291,61 @@ $thisWeekAttendance = $stmt->fetchColumn();
                     console.error('Error loading recent attendance:', error);
                 });
         }
+
+        // Enhanced geolocation with better error handling
+        function initializeGeolocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        window.currentLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        updateLocationDisplay();
+                        console.log('Location obtained:', window.currentLocation);
+                    },
+                    function(error) {
+                        console.error('Geolocation error:', error);
+                        updateLocationDisplay();
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+
+                // Watch for location changes
+                navigator.geolocation.watchPosition(
+                    function(position) {
+                        window.currentLocation = {
+                            latitude: position.coords.latitude,
+                            longitude: position.coords.longitude,
+                            accuracy: position.coords.accuracy
+                        };
+                        updateLocationDisplay();
+                    },
+                    function(error) {
+                        console.error('Location watch error:', error);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 5000,
+                        maximumAge: 30000
+                    }
+                );
+            } else {
+                console.error('Geolocation not supported');
+                updateLocationDisplay();
+            }
+        }
+
+        // Initialize geolocation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGeolocation();
+            loadRecentAttendance();
+        });
 
         function updateLocationDisplay() {
             const locationDisplay = document.getElementById('location-display');
